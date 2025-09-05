@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITXpress Meal Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .company-logo-bg {
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" fill="%23e5e7eb"><rect width="200" height="80" fill="%23f3f4f6"/><text x="100" y="45" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="%236b7280">ITXpress</text></svg>');
+            background-size: 200px 80px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Login Modal Overlay -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 company-logo-bg bg-opacity-10">
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-4 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Meal Management</h2>
+                    <p class="text-gray-600 mt-2">Sign in to access your account</p>
+                </div>
+                
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                        <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Enter your username" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition duration-200 font-medium">
+                        Sign In
+                    </button>
+                </form>
+                
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-500">Demo accounts:</p>
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="quickLogin('admin', 'admin123')" class="text-xs bg-gray-100 px-3 py-1 rounded">Admin</button>
+                        <button onclick="quickLogin('employee', 'emp123')" class="text-xs bg-gray-100 px-3 py-1 rounded">Employee</button>
+                        <button onclick="quickLogin('hr', 'hr123')" class="text-xs bg-gray-100 px-3 py-1 rounded">HR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-800">Meal Platform</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <span id="userInfo" class="text-gray-600"></span>
+                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+        <div class="flex">
+            <aside class="w-64 bg-white shadow-lg min-h-screen slide-in">
+                <nav class="mt-8">
+                    <div class="px-4 space-y-2">
+                        <button onclick="showSection('dashboard')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition duration-200 flex items-center space-x-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            </svg>
+                            <span>Dashboard</span>
+                        </button>
+                        
+                        <button onclick="showSection('meals')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition duration-200 flex items-center space-x-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            <span>Meal Tracking</span>
+                        </button>
+                        
+                        <button onclick="showSection('reports')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition duration-200 flex items-center space-x-3">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <span>Reports</span>
+                        </button>
+                        
+                        <div id="adminMenu" class="hidden">
+                            <button onclick="showSection('settings')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition duration-200 flex items-center space-x-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span>Settings</span>
+                            </button>
+                            
+                            <button onclick="showSection('schedules')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition duration-200 flex items-center space-x-3">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>Report Schedules</span>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 p-8">
+                <!-- Dashboard Section -->
+                <div id="dashboardSection" class="section fade-in">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard</h2>
+                        <p class="text-gray-600">Overview of meal consumption and deductions</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">This Month</p>
+                                    <p class="text-2xl font-bold text-gray-900">47 meals</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Total Deduction</p>
+                                    <p class="text-2xl font-bold text-gray-900">$142.50</p>
+                                </div>
+                                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Remaining Limit</p>
+                                    <p class="text-2xl font-bold text-gray-900">13 meals</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Avg. Daily</p>
+                                    <p class="text-2xl font-bold text-gray-900">2.1 meals</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Consumption</h3>
+                            <canvas id="consumptionChart" width="400" height="200"></canvas>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Meals</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                            <span class="text-orange-600 text-sm font-medium">L</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-800">Lunch</p>
+                                            <p class="text-sm text-gray-500">Today, 12:30 PM</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-600">$3.50</span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <span class="text-blue-600 text-sm font-medium">B</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-800">Breakfast</p>
+                                            <p class="text-sm text-gray-500">Today, 8:15 AM</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-600">$2.50</span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <span class="text-purple-600 text-sm font-medium">D</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-gray-800">Dinner</p>
+                                            <p class="text-sm text-gray-500">Yesterday, 7:45 PM</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-600">$4.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meals Section -->
+                <div id="mealsSection" class="section hidden fade-in">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Meal Tracking</h2>
+                        <p class="text-gray-600">Track and manage meal consumption</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Add New Meal</h3>
+                        <form id="mealForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Employee</label>
+                                <select id="employeeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="">Select Employee</option>
+                                    <option value="1">John Doe (ID: 001)</option>
+                                    <option value="2">Jane Smith (ID: 002)</option>
+                                    <option value="3">Mike Johnson (ID: 003)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Meal Type</label>
+                                <select id="mealTypeSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="">Select Meal</option>
+                                    <option value="breakfast">Breakfast ($2.50)</option>
+                                    <option value="lunch">Lunch ($3.50)</option>
+                                    <option value="dinner">Dinner ($4.00)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Date & Time</label>
+                                <input type="datetime-local" id="mealDateTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                                    Add Meal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800">Meal History</h3>
+                            <div class="flex space-x-2">
+                                <input type="date" id="filterDate" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <select id="filterEmployee" class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">All Employees</option>
+                                    <option value="1">John Doe</option>
+                                    <option value="2">Jane Smith</option>
+                                    <option value="3">Mike Johnson</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Employee</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Meal Type</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Date & Time</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Cost</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mealTableBody">
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 px-4">John Doe</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                                Lunch
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">2024-01-15 12:30</td>
+                                        <td class="py-3 px-4 font-medium">$3.50</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Within Limit
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <button class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 px-4">Jane Smith</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                Breakfast
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">2024-01-15 08:15</td>
+                                        <td class="py-3 px-4 font-medium">$2.50</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                Over Limit
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <button class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div id="reportsSection" class="section hidden fade-in">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Reports & Analytics</h2>
+                        <p class="text-gray-600">Generate and view meal consumption reports</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Generate Report</h3>
+                            <form id="reportForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+                                    <select id="reportType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        <option value="daily">Daily Report</option>
+                                        <option value="weekly">Weekly Report</option>
+                                        <option value="bi-weekly">Bi-Weekly Report</option>
+                                        <option value="semi-monthly">Semi-Monthly Report</option>
+                                        <option value="monthly">Monthly Report</option>
+                                        <option value="custom">Custom Period</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="customDateRange" class="hidden grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                                        <input type="date" id="startDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                                        <input type="date" id="endDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                                    <select id="reportDepartment" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                        <option value="">All Departments</option>
+                                        <option value="it">IT Department</option>
+                                        <option value="hr">HR Department</option>
+                                        <option value="finance">Finance Department</option>
+                                        <option value="operations">Operations</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex space-x-3">
+                                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                                        Generate Report
+                                    </button>
+                                    <button type="button" onclick="exportReport()" class="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200">
+                                        Export CSV
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Report Summary</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Total Employees</span>
+                                    <span class="font-semibold text-gray-800">156</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Total Meals</span>
+                                    <span class="font-semibold text-gray-800">2,847</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Total Deductions</span>
+                                    <span class="font-semibold text-gray-800">$8,642.50</span>
+                                </div>
+                                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-gray-600">Avg. per Employee</span>
+                                    <span class="font-semibold text-gray-800">$55.40</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Reports</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Report Name</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Period</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Generated</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">Monthly Report - January 2024</td>
+                                        <td class="py-3 px-4">Jan 1 - Jan 31, 2024</td>
+                                        <td class="py-3 px-4">2024-01-15 09:30</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Completed
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex space-x-2">
+                                                <button class="text-indigo-600 hover:text-indigo-800 text-sm">View</button>
+                                                <button class="text-green-600 hover:text-green-800 text-sm">Download</button>
+                                                <button class="text-blue-600 hover:text-blue-800 text-sm">Email</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">Weekly Report - Week 2</td>
+                                        <td class="py-3 px-4">Jan 8 - Jan 14, 2024</td>
+                                        <td class="py-3 px-4">2024-01-14 17:45</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                Processing
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex space-x-2">
+                                                <button class="text-gray-400 text-sm cursor-not-allowed">View</button>
+                                                <button class="text-gray-400 text-sm cursor-not-allowed">Download</button>
+                                                <button class="text-gray-400 text-sm cursor-not-allowed">Email</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section (Admin Only) -->
+                <div id="settingsSection" class="section hidden fade-in">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Settings</h2>
+                        <p class="text-gray-600">Configure meal rates, limits, and system settings</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Meal Rate Settings</h3>
+                            <form id="rateSettingsForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Breakfast Rate</label>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-500">$</span>
+                                        <input type="number" step="0.01" value="2.50" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Lunch Rate</label>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-500">$</span>
+                                        <input type="number" step="0.01" value="3.50" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Dinner Rate</label>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-gray-500">$</span>
+                                        <input type="number" step="0.01" value="4.00" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Meal Limit</label>
+                                    <input type="number" value="60" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Over-Limit Rate Multiplier</label>
+                                    <input type="number" step="0.1" value="1.5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <p class="text-xs text-gray-500 mt-1">Meals over limit will be charged at this multiplier</p>
+                                </div>
+                                
+                                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                                    Save Settings
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">SMTP Configuration</h3>
+                            <form id="smtpSettingsForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">SMTP Host</label>
+                                    <input type="text" value="smtp.gmail.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">SMTP Port</label>
+                                    <input type="number" value="465" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                                    <input type="email" placeholder="your.email@company.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                    <input type="password" placeholder="App password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="smtpSecure" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <label for="smtpSecure" class="ml-2 block text-sm text-gray-700">Use SSL/TLS</label>
+                                </div>
+                                
+                                <div class="flex space-x-3">
+                                    <button type="button" onclick="testSMTP()" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200">
+                                        Test Connection
+                                    </button>
+                                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                                        Save SMTP
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Schedules Section (Admin Only) -->
+                <div id="schedulesSection" class="section hidden fade-in">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Report Schedules</h2>
+                        <p class="text-gray-600">Configure automated report generation and email delivery</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Create New Schedule</h3>
+                        <form id="scheduleForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Schedule Name</label>
+                                <input type="text" placeholder="e.g., Weekly HR Report" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                                <select id="scheduleFrequency" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="bi-weekly">Bi-Weekly</option>
+                                    <option value="semi-monthly">Semi-Monthly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                                <input type="time" value="09:00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="">All Departments</option>
+                                    <option value="it">IT Department</option>
+                                    <option value="hr">HR Department</option>
+                                    <option value="finance">Finance Department</option>
+                                </select>
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Recipients</label>
+                                <input type="text" placeholder="email1@company.com, email2@company.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="scheduleActive" checked class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="scheduleActive" class="ml-2 block text-sm text-gray-700">Active</label>
+                            </div>
+                            
+                            <div class="flex items-end">
+                                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200">
+                                    Create Schedule
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800">Active Schedules</h3>
+                            <button onclick="runAllSchedules()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                                Run All Now
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Schedule Name</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Frequency</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Time</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Recipients</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Last Run</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                                        <th class="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">Weekly HR Report</td>
+                                        <td class="py-3 px-4">Weekly</td>
+                                        <td class="py-3 px-4">09:00</td>
+                                        <td class="py-3 px-4">hr@company.com</td>
+                                        <td class="py-3 px-4">2024-01-14 09:00</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Active
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex space-x-2">
+                                                <button class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</button>
+                                                <button class="text-green-600 hover:text-green-800 text-sm">Run Now</button>
+                                                <button class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                        <td class="py-3 px-4 font-medium">Monthly Finance Summary</td>
+                                        <td class="py-3 px-4">Monthly</td>
+                                        <td class="py-3 px-4">08:00</td>
+                                        <td class="py-3 px-4">finance@company.com</td>
+                                        <td class="py-3 px-4">2024-01-01 08:00</td>
+                                        <td class="py-3 px-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Active
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex space-x-2">
+                                                <button class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</button>
+                                                <button class="text-green-600 hover:text-green-800 text-sm">Run Now</button>
+                                                <button class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let currentUser = null;
+        let currentSection = 'dashboard';
+        
+        // Database Schema Simulation (InnoDB Tables)
+        const dbSchema = {
+            user: {
+                columns: ['id', 'username', 'password', 'email', 'role', 'employee_id', 'created_at', 'last_login'],
+                data: [
+                    { id: 1, username: 'admin', role: 'admin', employee_id: '001', email: 'admin@itxpress.us' },
+                    { id: 2, username: 'employee', role: 'employee', employee_id: '002', email: 'john@itxpress.us' },
+                    { id: 3, username: 'hr', role: 'manager', employee_id: '003', email: 'hr@itxpress.us' }
+                ]
+            },
+            app_settings: {
+                columns: ['id', 'k', 'v', 'updated_at'],
+                data: [
+                    { id: 1, k: 'company_logo_url', v: '/logo.png' },
+                    { id: 2, k: 'smtp_host', v: 'smtp.gmail.com' },
+                    { id: 3, k: 'smtp_port', v: '465' }
+                ]
+            },
+            meal_setting: {
+                columns: ['id', 'workcode', 'rate_normal', 'limit_monthly', 'rate_after_limit'],
+                data: [
+                    { id: 1, workcode: 'breakfast', rate_normal: 2.50, limit_monthly: 20, rate_after_limit: 3.75 },
+                    { id: 2, workcode: 'lunch', rate_normal: 3.50, limit_monthly: 20, rate_after_limit: 5.25 },
+                    { id: 3, workcode: 'dinner', rate_normal: 4.00, limit_monthly: 20, rate_after_limit: 6.00 }
+                ]
+            },
+            employee_meal_rate: {
+                columns: ['id', 'userid', 'workcode', 'rate_normal', 'limit_monthly', 'rate_after_limit'],
+                data: [
+                    { id: 1, userid: '002', workcode: 'lunch', rate_normal: 3.00, limit_monthly: 25, rate_after_limit: 4.50 }
+                ]
+            },
+            report_schedule: {
+                columns: ['id', 'name', 'type', 'anchor_date', 'day_of_week', 'time_of_day', 'email_enabled', 'format', 'next_run'],
+                data: [
+                    { id: 1, name: 'Weekly HR Report', type: 'weekly', day_of_week: 1, time_of_day: '09:00:00', email_enabled: 1, format: 'csv' },
+                    { id: 2, name: 'Monthly Finance Summary', type: 'monthly', day_of_month: 1, time_of_day: '08:00:00', email_enabled: 1, format: 'xlsx' }
+                ]
+            },
+            report_schedule_recipient: {
+                columns: ['id', 'schedule_id', 'email', 'name'],
+                data: [
+                    { id: 1, schedule_id: 1, email: 'hr@itxpress.us', name: 'HR Manager' },
+                    { id: 2, schedule_id: 2, email: 'finance@itxpress.us', name: 'Finance Team' }
+                ]
+            }
+        };
+        
+        // Business Logic - Meal Pricing Calculator
+        class MealPricingEngine {
+            static calculateMealCost(userid, workcode, currentMonthCount) {
+                // Get employee-specific rates or fall back to global settings
+                const employeeRate = dbSchema.employee_meal_rate.data.find(
+                    r => r.userid === userid && r.workcode === workcode
+                );
+                
+                const globalRate = dbSchema.meal_setting.data.find(
+                    r => r.workcode === workcode
+                );
+                
+                const settings = employeeRate || globalRate;
+                if (!settings) return { cost: 0, status: 'error', message: 'No rate found' };
+                
+                const { rate_normal, limit_monthly, rate_after_limit } = settings;
+                const newCount = currentMonthCount + 1;
+                
+                let cost, status, breakdown;
+                
+                if (newCount <= limit_monthly) {
+                    // Within limit
+                    cost = rate_normal;
+                    status = 'within';
+                    breakdown = `${newCount}/${limit_monthly} meals at $${rate_normal}`;
+                } else {
+                    // Over limit - calculate mixed pricing
+                    const withinLimitCost = limit_monthly * rate_normal;
+                    const overLimitCount = newCount - limit_monthly;
+                    const overLimitCost = overLimitCount * rate_after_limit;
+                    
+                    cost = rate_after_limit; // Cost for this specific meal
+                    status = 'over';
+                    breakdown = `Meal ${newCount}: $${rate_after_limit} (over limit)`;
+                }
+                
+                return { cost, status, breakdown, settings };
+            }
+            
+            static calculateMonthlyDeduction(userid, meals) {
+                const deductionsByWorkcode = {};
+                
+                // Group meals by workcode
+                const mealsByWorkcode = meals.reduce((acc, meal) => {
+                    if (!acc[meal.workcode]) acc[meal.workcode] = [];
+                    acc[meal.workcode].push(meal);
+                    return acc;
+                }, {});
+                
+                let totalDeduction = 0;
+                
+                Object.entries(mealsByWorkcode).forEach(([workcode, workcodeMeals]) => {
+                    const count = workcodeMeals.length;
+                    const settings = this.getEffectiveSettings(userid, workcode);
+                    
+                    if (settings) {
+                        const { rate_normal, limit_monthly, rate_after_limit } = settings;
+                        
+                        let deduction;
+                        if (count <= limit_monthly) {
+                            deduction = count * rate_normal;
+                        } else {
+                            deduction = (limit_monthly * rate_normal) + 
+                                       ((count - limit_monthly) * rate_after_limit);
+                        }
+                        
+                        deductionsByWorkcode[workcode] = {
+                            count,
+                            withinLimit: Math.min(count, limit_monthly),
+                            overLimit: Math.max(0, count - limit_monthly),
+                            deduction,
+                            settings
+                        };
+                        
+                        totalDeduction += deduction;
+                    }
+                });
+                
+                return { totalDeduction, breakdown: deductionsByWorkcode };
+            }
+            
+            static getEffectiveSettings(userid, workcode) {
+                const employeeRate = dbSchema.employee_meal_rate.data.find(
+                    r => r.userid === userid && r.workcode === workcode
+                );
+                
+                const globalRate = dbSchema.meal_setting.data.find(
+                    r => r.workcode === workcode
+                );
+                
+                return employeeRate || globalRate;
+            }
+        }
+        
+        // Sample meal consumption data with enhanced business logic
+        const sampleMeals = [
+            { id: 1, employee: 'John Doe', userid: '002', type: 'lunch', workcode: 'lunch', datetime: '2024-01-15T12:30', cost: 3.00, status: 'within', monthCount: 15 },
+            { id: 2, employee: 'Jane Smith', userid: '003', type: 'breakfast', workcode: 'breakfast', datetime: '2024-01-15T08:15', cost: 3.75, status: 'over', monthCount: 22 },
+            { id: 3, employee: 'Mike Johnson', userid: '004', type: 'dinner', workcode: 'dinner', datetime: '2024-01-14T19:45', cost: 4.00, status: 'within', monthCount: 18 }
+        ];
+        
+        // Authentication
+        function quickLogin(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+            login();
+        }
+        
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple demo authentication
+            const users = {
+                'admin': { role: 'admin', name: 'Administrator' },
+                'employee': { role: 'employee', name: 'John Employee' },
+                'hr': { role: 'hr', name: 'HR Manager' }
+            };
+            
+            if (users[username]) {
+                currentUser = { username, ...users[username] };
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                document.getElementById('userInfo').textContent = `Welcome, ${currentUser.name} (${currentUser.role})`;
+                
+                // Show/hide admin sections
+                if (currentUser.role === 'admin' || currentUser.role === 'hr') {
+                    document.getElementById('adminMenu').classList.remove('hidden');
+                }
+                
+                initializeApp();
+            } else {
+                alert('Invalid credentials. Use demo accounts: admin/admin123, employee/emp123, hr/hr123');
+            }
+        }
+        
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('adminMenu').classList.add('hidden');
+        }
+        
+        // Navigation
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + 'Section').classList.remove('hidden');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-indigo-50', 'text-indigo-600');
+            });
+            
+            event.target.classList.add('bg-indigo-50', 'text-indigo-600');
+            currentSection = sectionName;
+        }
+        
+        // Initialize application
+        function initializeApp() {
+            // Set current date/time for meal form
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('mealDateTime').value = now.toISOString().slice(0, 16);
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Set up event listeners
+            setupEventListeners();
+        }
+        
+        // Charts
+        function initializeCharts() {
+            const ctx = document.getElementById('consumptionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Meals Consumed',
+                        data: [45, 52, 48, 61],
+                        borderColor: 'rgb(79, 70, 229)',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Event Listeners
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                login();
+            });
+            
+            // Meal form
+            document.getElementById('mealForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addMeal();
+            });
+            
+            // Report form
+            document.getElementById('reportForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                generateReport();
+            });
+            
+            // Report type change
+            document.getElementById('reportType').addEventListener('change', function(e) {
+                const customRange = document.getElementById('customDateRange');
+                if (e.target.value === 'custom') {
+                    customRange.classList.remove('hidden');
+                } else {
+                    customRange.classList.add('hidden');
+                }
+            });
+            
+            // Settings forms
+            document.getElementById('rateSettingsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveRateSettings();
+            });
+            
+            document.getElementById('smtpSettingsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveSMTPSettings();
+            });
+            
+            // Schedule form
+            document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createSchedule();
+            });
+        }
+        
+        // Meal Management with Business Logic
+        function addMeal() {
+            const employeeId = document.getElementById('employeeSelect').value;
+            const mealType = document.getElementById('mealTypeSelect').value;
+            const datetime = document.getElementById('mealDateTime').value;
+            
+            if (!employeeId || !mealType || !datetime) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const employeeName = document.getElementById('employeeSelect').selectedOptions[0].text.split(' (')[0];
+            const userid = `00${employeeId}`; // Convert to userid format
+            
+            // Get current month count for this employee and meal type
+            const currentMonth = new Date(datetime).getMonth();
+            const currentYear = new Date(datetime).getFullYear();
+            const currentMonthMeals = sampleMeals.filter(meal => {
+                const mealDate = new Date(meal.datetime);
+                return meal.userid === userid && 
+                       meal.workcode === mealType && 
+                       mealDate.getMonth() === currentMonth && 
+                       mealDate.getFullYear() === currentYear;
+            });
+            
+            // Calculate cost using business logic
+            const pricingResult = MealPricingEngine.calculateMealCost(userid, mealType, currentMonthMeals.length);
+            
+            // Add to sample data (in real app, this would be an API call)
+            const newMeal = {
+                id: Date.now(),
+                employee: employeeName,
+                userid: userid,
+                type: mealType,
+                workcode: mealType,
+                datetime: datetime,
+                cost: pricingResult.cost,
+                status: pricingResult.status,
+                monthCount: currentMonthMeals.length + 1,
+                breakdown: pricingResult.breakdown
+            };
+            
+            sampleMeals.unshift(newMeal);
+            updateMealTable();
+            updateDashboardStats();
+            
+            // Reset form
+            document.getElementById('mealForm').reset();
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('mealDateTime').value = now.toISOString().slice(0, 16);
+            
+            showNotification(`Meal added: ${pricingResult.breakdown}`, 'success');
+        }
+        
+        function getMealCost(mealType) {
+            // Use business logic instead of hardcoded values
+            const settings = dbSchema.meal_setting.data.find(s => s.workcode === mealType);
+            return settings ? settings.rate_normal : 0;
+        }
+        
+        function updateDashboardStats() {
+            // Calculate real-time statistics
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            const thisMonthMeals = sampleMeals.filter(meal => {
+                const mealDate = new Date(meal.datetime);
+                return mealDate.getMonth() === currentMonth && mealDate.getFullYear() === currentYear;
+            });
+            
+            const totalMeals = thisMonthMeals.length;
+            const totalDeduction = thisMonthMeals.reduce((sum, meal) => sum + meal.cost, 0);
+            const avgDaily = totalMeals / new Date().getDate();
+            
+            // Update dashboard cards
+            document.querySelector('.grid .bg-white:nth-child(1) .text-2xl').textContent = `${totalMeals} meals`;
+            document.querySelector('.grid .bg-white:nth-child(2) .text-2xl').textContent = `$${totalDeduction.toFixed(2)}`;
+            document.querySelector('.grid .bg-white:nth-child(4) .text-2xl').textContent = `${avgDaily.toFixed(1)} meals`;
+            
+            // Calculate remaining limit (assuming 60 meal limit total)
+            const remainingLimit = Math.max(0, 60 - totalMeals);
+            document.querySelector('.grid .bg-white:nth-child(3) .text-2xl').textContent = `${remainingLimit} meals`;
+        }
+        
+        function updateMealTable() {
+            const tbody = document.getElementById('mealTableBody');
+            tbody.innerHTML = sampleMeals.map(meal => `
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 px-4">${meal.employee}</td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getMealTypeClass(meal.type)}">
+                            ${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">${new Date(meal.datetime).toLocaleString()}</td>
+                    <td class="py-3 px-4 font-medium">$${meal.cost.toFixed(2)}</td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(meal.status)}">
+                            ${meal.status === 'within' ? 'Within Limit' : 'Over Limit'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <button onclick="deleteMeal(${meal.id})" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function getMealTypeClass(type) {
+            const classes = {
+                breakfast: 'bg-blue-100 text-blue-800',
+                lunch: 'bg-orange-100 text-orange-800',
+                dinner: 'bg-purple-100 text-purple-800'
+            };
+            return classes[type] || 'bg-gray-100 text-gray-800';
+        }
+        
+        function getStatusClass(status) {
+            return status === 'within' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        }
+        
+        function deleteMeal(id) {
+            if (confirm('Are you sure you want to delete this meal record?')) {
+                const index = sampleMeals.findIndex(meal => meal.id === id);
+                if (index > -1) {
+                    sampleMeals.splice(index, 1);
+                    updateMealTable();
+                    showNotification('Meal deleted successfully!', 'success');
+                }
+            }
+        }
+        
+        // Advanced Reporting with SQL Aggregation Engine
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const department = document.getElementById('reportDepartment').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            showNotification(`Generating ${reportType} report using SQL aggregation engine...`, 'info');
+            
+            // Use Period Calculation Engine for accurate period resolution
+            const mockSchedule = { 
+                type: reportType,
+                start_date: startDate,
+                end_date: endDate,
+                anchor_date: '2025-01-01', // Default anchor for bi-weekly
+                day_of_week: 1 // Monday default for weekly
+            };
+            
+            let period;
+            try {
+                period = PeriodCalculationEngine.resolvePeriod(mockSchedule, new Date());
+                console.log(`📅 Period resolved: ${period.description}`);
+            } catch (error) {
+                console.error('Period resolution error:', error);
+                alert('Error calculating report period. Please check your settings.');
+                return;
+            }
+            
+            // Log the SQL aggregation process
+            logAction('report_generation_started', {
+                type: reportType,
+                period: period.description,
+                department: department
+            });
+            
+            // Simulate report generation with SQL aggregation
+            setTimeout(() => {
+                try {
+                    // Use SQL Aggregation Engine for precise calculations
+                    const reportData = SQLAggregationEngine.generateEmployeeDeductionReport(
+                        period.start, 
+                        period.end
+                    );
+                    
+                    // Add period description and department filter
+                    reportData.period.description = period.description;
+                    reportData.department_filter = department;
+                    
+                    // Filter by department if specified
+                    if (department) {
+                        reportData.employees = reportData.employees.filter(emp => {
+                            // In real app, would join with employee table for department info
+                            const deptMapping = {
+                                '002': 'it',
+                                '003': 'hr', 
+                                '004': 'finance'
+                            };
+                            return deptMapping[emp.userid] === department;
+                        });
+                        
+                        // Recalculate summary for filtered data
+                        reportData.summary = {
+                            total_employees: reportData.employees.length,
+                            total_deduction: reportData.employees.reduce((sum, emp) => sum + emp.total_deduction, 0),
+                            avg_deduction: reportData.employees.length > 0 ? 
+                                reportData.employees.reduce((sum, emp) => sum + emp.total_deduction, 0) / reportData.employees.length : 0
+                        };
+                    }
+                    
+                    displayAdvancedReportSummary(reportData);
+                    
+                    // Store report for export
+                    window.lastGeneratedReport = reportData;
+                    
+                    logAction('report_generation_completed', {
+                        type: reportType,
+                        employees_processed: reportData.summary.total_employees,
+                        total_deduction: reportData.summary.total_deduction,
+                        sql_steps: reportData.sql_steps
+                    });
+                    
+                    showNotification(`Advanced report generated! Processed ${reportData.summary.total_employees} employees with ${reportData.sql_steps.overrides_applied} custom overrides.`, 'success');
+                    
+                } catch (error) {
+                    console.error('Report generation error:', error);
+                    showNotification('Error generating report. Please try again.', 'error');
+                    
+                    logAction('report_generation_failed', {
+                        type: reportType,
+                        error: error.message
+                    });
+                }
+            }, 2000);
+        }
+        
+        function generateReportData(meals, startDate, endDate) {
+            const employeeData = {};
+            
+            // Group meals by employee
+            meals.forEach(meal => {
+                if (!employeeData[meal.userid]) {
+                    employeeData[meal.userid] = {
+                        name: meal.employee,
+                        userid: meal.userid,
+                        meals: [],
+                        totalDeduction: 0,
+                        mealCounts: { breakfast: 0, lunch: 0, dinner: 0 }
+                    };
+                }
+                
+                employeeData[meal.userid].meals.push(meal);
+                employeeData[meal.userid].mealCounts[meal.workcode]++;
+            });
+            
+            // Calculate deductions for each employee
+            Object.values(employeeData).forEach(employee => {
+                const deductionResult = MealPricingEngine.calculateMonthlyDeduction(employee.userid, employee.meals);
+                employee.totalDeduction = deductionResult.totalDeduction;
+                employee.deductionBreakdown = deductionResult.breakdown;
+            });
+            
+            return {
+                period: { start: startDate, end: endDate },
+                employees: Object.values(employeeData),
+                summary: {
+                    totalEmployees: Object.keys(employeeData).length,
+                    totalMeals: meals.length,
+                    totalDeductions: Object.values(employeeData).reduce((sum, emp) => sum + emp.totalDeduction, 0)
+                }
+            };
+        }
+        
+        function displayAdvancedReportSummary(reportData) {
+            // Update report summary cards with SQL aggregation results
+            const summaryCards = document.querySelectorAll('#reportsSection .bg-gray-50');
+            if (summaryCards.length >= 4) {
+                summaryCards[0].querySelector('.font-semibold').textContent = reportData.summary.total_employees;
+                summaryCards[1].querySelector('.font-semibold').textContent = reportData.sql_steps.quantities_found;
+                summaryCards[2].querySelector('.font-semibold').textContent = `$${reportData.summary.total_deduction.toFixed(2)}`;
+                summaryCards[3].querySelector('.font-semibold').textContent = `$${reportData.summary.avg_deduction.toFixed(2)}`;
+            }
+            
+            // Update labels to reflect SQL aggregation data
+            const labels = document.querySelectorAll('#reportsSection .text-gray-600');
+            if (labels.length >= 4) {
+                labels[0].textContent = 'Total Employees';
+                labels[1].textContent = 'Meal Transactions';
+                labels[2].textContent = 'Total Deductions';
+                labels[3].textContent = 'Avg. per Employee';
+            }
+            
+            // Display detailed breakdown in console for debugging
+            console.log('📊 Advanced Report Summary:', {
+                period: reportData.period.description,
+                sql_pipeline: reportData.sql_steps,
+                employee_breakdown: reportData.employees.map(emp => ({
+                    userid: emp.userid,
+                    total_deduction: emp.total_deduction,
+                    meal_types: Object.keys(emp.breakdown),
+                    overrides_used: Object.values(emp.breakdown).filter(b => b.source === 'employee_override').length
+                }))
+            });
+        }
+        
+        function displayReportSummary(reportData) {
+            // Fallback for simple report display
+            displayAdvancedReportSummary(reportData);
+        }
+        
+        function exportReport() {
+            const reportType = document.getElementById('reportType').value;
+            
+            // Use last generated report if available, otherwise generate new one
+            const reportData = window.lastGeneratedReport;
+            
+            if (!reportData) {
+                showNotification('Please generate a report first before exporting', 'info');
+                return;
+            }
+            
+            // Advanced CSV export with SQL aggregation results
+            let csvContent = "# ITXpress Meal Management System - Advanced Report\n";
+            csvContent += `# Generated: ${new Date().toISOString()}\n`;
+            csvContent += `# Period: ${reportData.period.description}\n`;
+            csvContent += `# SQL Pipeline: ${reportData.sql_steps.quantities_found} transactions, ${reportData.sql_steps.overrides_applied} overrides\n\n`;
+            
+            // Employee Summary Section
+            csvContent += "EMPLOYEE SUMMARY\n";
+            csvContent += "Employee ID,Total Deduction,Breakfast Qty,Breakfast Cost,Lunch Qty,Lunch Cost,Dinner Qty,Dinner Cost,Overrides Used\n";
+            
+            reportData.employees.forEach(emp => {
+                const breakfast = emp.breakdown.breakfast || { qty: 0, cost: 0, source: 'global_setting' };
+                const lunch = emp.breakdown.lunch || { qty: 0, cost: 0, source: 'global_setting' };
+                const dinner = emp.breakdown.dinner || { qty: 0, cost: 0, source: 'global_setting' };
+                
+                const overridesUsed = Object.values(emp.breakdown).filter(b => b.source === 'employee_override').length;
+                
+                csvContent += `${emp.userid},${emp.total_deduction.toFixed(2)},${breakfast.qty},${breakfast.cost.toFixed(2)},${lunch.qty},${lunch.cost.toFixed(2)},${dinner.qty},${dinner.cost.toFixed(2)},${overridesUsed}\n`;
+            });
+            
+            // Detailed Breakdown Section
+            csvContent += "\nDETAILED BREAKDOWN\n";
+            csvContent += "Employee ID,Meal Type,Quantity,Rate,Limit,Rate After Limit,Within Limit,Over Limit,Total Cost,Source\n";
+            
+            reportData.employees.forEach(emp => {
+                Object.entries(emp.breakdown).forEach(([workcode, details]) => {
+                    csvContent += `${emp.userid},${workcode},${details.qty},${details.rate},${details.limit},${details.rate_after},${details.within_limit},${details.over_limit},${details.cost.toFixed(2)},${details.source}\n`;
+                });
+            });
+            
+            // Business Logic Validation Section
+            csvContent += "\nBUSINESS LOGIC VALIDATION\n";
+            csvContent += "Employee ID,Meal Type,Calculation Formula,Expected Cost,Actual Cost,Status\n";
+            
+            reportData.employees.forEach(emp => {
+                Object.entries(emp.breakdown).forEach(([workcode, details]) => {
+                    let formula, expectedCost;
+                    if (details.qty <= details.limit) {
+                        formula = `${details.qty} × ${details.rate}`;
+                        expectedCost = details.qty * details.rate;
+                    } else {
+                        formula = `(${details.limit} × ${details.rate}) + (${details.over_limit} × ${details.rate_after})`;
+                        expectedCost = (details.limit * details.rate) + (details.over_limit * details.rate_after);
+                    }
+                    
+                    const status = Math.abs(expectedCost - details.cost) < 0.01 ? 'VALID' : 'ERROR';
+                    csvContent += `${emp.userid},${workcode},"${formula}",${expectedCost.toFixed(2)},${details.cost.toFixed(2)},${status}\n`;
+                });
+            });
+            
+            // Summary Statistics
+            csvContent += "\nSUMMARY STATISTICS\n";
+            csvContent += `Total Employees,${reportData.summary.total_employees}\n`;
+            csvContent += `Total Deductions,$${reportData.summary.total_deduction.toFixed(2)}\n`;
+            csvContent += `Average per Employee,$${reportData.summary.avg_deduction.toFixed(2)}\n`;
+            csvContent += `SQL Transactions Processed,${reportData.sql_steps.quantities_found}\n`;
+            csvContent += `Employee Overrides Applied,${reportData.sql_steps.overrides_applied}\n`;
+            csvContent += `Employees with Overrides,${reportData.employees.filter(emp => Object.values(emp.breakdown).some(b => b.source === 'employee_override')).length}\n`;
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `advanced_meal_report_${reportType}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            logAction('report_exported', {
+                type: reportType,
+                period: reportData.period.description,
+                employees: reportData.summary.total_employees,
+                total_deduction: reportData.summary.total_deduction
+            });
+            
+            showNotification(`Advanced SQL report exported! ${reportData.summary.total_employees} employees, $${reportData.summary.total_deduction.toFixed(2)} total deductions.`, 'success');
+        }
+        
+        // Settings
+        function saveRateSettings() {
+            showNotification('Rate settings saved successfully!', 'success');
+        }
+        
+        function saveSMTPSettings() {
+            showNotification('SMTP settings saved successfully!', 'success');
+        }
+        
+        function testSMTP() {
+            showNotification('Testing SMTP connection...', 'info');
+            setTimeout(() => {
+                showNotification('SMTP connection successful!', 'success');
+            }, 2000);
+        }
+        
+        // Advanced Schedule Management with SMTP
+        function createSchedule() {
+            const formData = new FormData(document.getElementById('scheduleForm'));
+            const scheduleName = formData.get('scheduleName') || document.querySelector('#scheduleForm input[type="text"]').value;
+            const frequency = document.getElementById('scheduleFrequency').value;
+            const time = document.querySelector('#scheduleForm input[type="time"]').value;
+            const recipients = document.querySelector('#scheduleForm input[placeholder*="email"]').value;
+            
+            if (!scheduleName || !recipients) {
+                alert('Please fill in schedule name and email recipients');
+                return;
+            }
+            
+            // Calculate next run time
+            const nextRun = calculateNextRun(frequency, time);
+            
+            // Add to schedule database
+            const newSchedule = {
+                id: Date.now(),
+                name: scheduleName,
+                type: frequency,
+                time_of_day: time,
+                email_enabled: 1,
+                format: 'csv',
+                next_run: nextRun,
+                recipients: recipients.split(',').map(email => email.trim()),
+                created_at: new Date().toISOString()
+            };
+            
+            dbSchema.report_schedule.data.push(newSchedule);
+            
+            // Add recipients
+            newSchedule.recipients.forEach(email => {
+                dbSchema.report_schedule_recipient.data.push({
+                    id: Date.now() + Math.random(),
+                    schedule_id: newSchedule.id,
+                    email: email,
+                    name: email.split('@')[0]
+                });
+            });
+            
+            updateScheduleTable();
+            showNotification(`Schedule "${scheduleName}" created successfully!`, 'success');
+            document.getElementById('scheduleForm').reset();
+        }
+        
+        function calculateNextRun(frequency, time) {
+            const now = new Date();
+            const [hours, minutes] = time.split(':').map(Number);
+            let nextRun = new Date();
+            
+            nextRun.setHours(hours, minutes, 0, 0);
+            
+            // If time has passed today, move to next occurrence
+            if (nextRun <= now) {
+                switch(frequency) {
+                    case 'daily':
+                        nextRun.setDate(nextRun.getDate() + 1);
+                        break;
+                    case 'weekly':
+                        nextRun.setDate(nextRun.getDate() + 7);
+                        break;
+                    case 'bi-weekly':
+                        nextRun.setDate(nextRun.getDate() + 14);
+                        break;
+                    case 'semi-monthly':
+                        // Next 1st or 16th
+                        if (now.getDate() <= 15) {
+                            nextRun.setDate(16);
+                        } else {
+                            nextRun.setMonth(nextRun.getMonth() + 1, 1);
+                        }
+                        break;
+                    case 'monthly':
+                        nextRun.setMonth(nextRun.getMonth() + 1, 1);
+                        break;
+                }
+            }
+            
+            return nextRun.toISOString();
+        }
+        
+        function updateScheduleTable() {
+            const tbody = document.querySelector('#schedulesSection tbody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = dbSchema.report_schedule.data.map(schedule => {
+                const recipients = dbSchema.report_schedule_recipient.data
+                    .filter(r => r.schedule_id === schedule.id)
+                    .map(r => r.email)
+                    .join(', ');
+                
+                const nextRun = schedule.next_run ? new Date(schedule.next_run).toLocaleString() : 'Not scheduled';
+                const lastRun = schedule.last_run ? new Date(schedule.last_run).toLocaleString() : 'Never';
+                
+                return `
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="py-3 px-4 font-medium">${schedule.name}</td>
+                        <td class="py-3 px-4">${schedule.type.charAt(0).toUpperCase() + schedule.type.slice(1)}</td>
+                        <td class="py-3 px-4">${schedule.time_of_day}</td>
+                        <td class="py-3 px-4 text-sm">${recipients}</td>
+                        <td class="py-3 px-4 text-sm">${lastRun}</td>
+                        <td class="py-3 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${schedule.email_enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                                ${schedule.email_enabled ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex space-x-2">
+                                <button onclick="editSchedule(${schedule.id})" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</button>
+                                <button onclick="runScheduleNow(${schedule.id})" class="text-green-600 hover:text-green-800 text-sm">Run Now</button>
+                                <button onclick="deleteSchedule(${schedule.id})" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function runScheduleNow(scheduleId) {
+            const schedule = dbSchema.report_schedule.data.find(s => s.id === scheduleId);
+            if (!schedule) return;
+            
+            showNotification(`Running "${schedule.name}" report with advanced SQL aggregation...`, 'info');
+            
+            // Simulate report generation with period calculation and SQL aggregation
+            setTimeout(() => {
+                try {
+                    // Use Period Calculation Engine to determine report period
+                    const period = PeriodCalculationEngine.resolvePeriod(schedule, new Date());
+                    console.log(`📅 Schedule ${schedule.name} - Period: ${period.description}`);
+                    
+                    // Generate report using SQL Aggregation Engine
+                    const reportData = SQLAggregationEngine.generateEmployeeDeductionReport(
+                        period.start, 
+                        period.end
+                    );
+                    
+                    // Update schedule metadata
+                    schedule.last_run = new Date().toISOString();
+                    schedule.next_run = PeriodCalculationEngine.calculateNextRun(schedule, new Date()).toISOString();
+                    
+                    // Log the execution with detailed information
+                    dbSchema.report_logs.data.push({
+                        id: Date.now(),
+                        schedule_id: scheduleId,
+                        period_start: period.start.toISOString().split('T')[0],
+                        period_end: period.end.toISOString().split('T')[0],
+                        format: schedule.format || 'csv',
+                        status: 'success',
+                        error_message: null,
+                        created_at: new Date().toISOString(),
+                        // Additional metadata
+                        employees_processed: reportData.summary.total_employees,
+                        total_deduction: reportData.summary.total_deduction,
+                        sql_steps: JSON.stringify(reportData.sql_steps),
+                        period_description: period.description
+                    });
+                    
+                    // Simulate email sending to recipients
+                    const recipients = dbSchema.report_schedule_recipient.data
+                        .filter(r => r.schedule_id === scheduleId)
+                        .map(r => r.email);
+                    
+                    console.log(`📧 Sending report to: ${recipients.join(', ')}`);
+                    console.log(`📊 Report summary: ${reportData.summary.total_employees} employees, $${reportData.summary.total_deduction.toFixed(2)} total deductions`);
+                    
+                    updateScheduleTable();
+                    
+                    logAction('scheduled_report_executed', {
+                        schedule_id: scheduleId,
+                        schedule_name: schedule.name,
+                        period: period.description,
+                        employees_processed: reportData.summary.total_employees,
+                        total_deduction: reportData.summary.total_deduction,
+                        recipients: recipients.length,
+                        sql_steps: reportData.sql_steps
+                    });
+                    
+                    showNotification(`Report "${schedule.name}" completed! Processed ${reportData.summary.total_employees} employees and emailed to ${recipients.length} recipients.`, 'success');
+                    
+                } catch (error) {
+                    console.error(`Error running schedule ${schedule.name}:`, error);
+                    
+                    // Log the error
+                    dbSchema.report_logs.data.push({
+                        id: Date.now(),
+                        schedule_id: scheduleId,
+                        period_start: new Date().toISOString().split('T')[0],
+                        period_end: new Date().toISOString().split('T')[0],
+                        format: schedule.format || 'csv',
+                        status: 'error',
+                        error_message: error.message,
+                        created_at: new Date().toISOString()
+                    });
+                    
+                    updateScheduleTable();
+                    showNotification(`Error running report "${schedule.name}": ${error.message}`, 'error');
+                }
+            }, 2000);
+        }
+        
+        function runAllSchedules() {
+            const activeSchedules = dbSchema.report_schedule.data.filter(s => s.email_enabled);
+            
+            if (activeSchedules.length === 0) {
+                showNotification('No active schedules found', 'info');
+                return;
+            }
+            
+            showNotification(`Running ${activeSchedules.length} scheduled reports...`, 'info');
+            
+            // Simulate running all schedules
+            let completed = 0;
+            activeSchedules.forEach((schedule, index) => {
+                setTimeout(() => {
+                    // Update last run time
+                    schedule.last_run = new Date().toISOString();
+                    schedule.next_run = calculateNextRun(schedule.type, schedule.time_of_day);
+                    
+                    // Log the execution
+                    dbSchema.report_logs.data.push({
+                        id: Date.now() + index,
+                        schedule_id: schedule.id,
+                        period_start: new Date().toISOString().split('T')[0],
+                        period_end: new Date().toISOString().split('T')[0],
+                        format: schedule.format,
+                        status: 'success',
+                        created_at: new Date().toISOString()
+                    });
+                    
+                    completed++;
+                    if (completed === activeSchedules.length) {
+                        updateScheduleTable();
+                        showNotification('All scheduled reports completed and emailed!', 'success');
+                    }
+                }, (index + 1) * 1000);
+            });
+        }
+        
+        function deleteSchedule(scheduleId) {
+            if (confirm('Are you sure you want to delete this schedule?')) {
+                // Remove schedule
+                const scheduleIndex = dbSchema.report_schedule.data.findIndex(s => s.id === scheduleId);
+                if (scheduleIndex > -1) {
+                    const schedule = dbSchema.report_schedule.data[scheduleIndex];
+                    dbSchema.report_schedule.data.splice(scheduleIndex, 1);
+                    
+                    // Remove recipients
+                    dbSchema.report_schedule_recipient.data = dbSchema.report_schedule_recipient.data
+                        .filter(r => r.schedule_id !== scheduleId);
+                    
+                    updateScheduleTable();
+                    showNotification(`Schedule "${schedule.name}" deleted successfully!`, 'success');
+                }
+            }
+        }
+        
+        function editSchedule(scheduleId) {
+            const schedule = dbSchema.report_schedule.data.find(s => s.id === scheduleId);
+            if (!schedule) return;
+            
+            // Populate form with existing data
+            document.querySelector('#scheduleForm input[type="text"]').value = schedule.name;
+            document.getElementById('scheduleFrequency').value = schedule.type;
+            document.querySelector('#scheduleForm input[type="time"]').value = schedule.time_of_day;
+            
+            const recipients = dbSchema.report_schedule_recipient.data
+                .filter(r => r.schedule_id === scheduleId)
+                .map(r => r.email)
+                .join(', ');
+            document.querySelector('#scheduleForm input[placeholder*="email"]').value = recipients;
+            
+            // Change form to edit mode
+            const submitButton = document.querySelector('#scheduleForm button[type="submit"]');
+            submitButton.textContent = 'Update Schedule';
+            submitButton.onclick = function(e) {
+                e.preventDefault();
+                updateSchedule(scheduleId);
+            };
+            
+            showNotification(`Editing schedule "${schedule.name}"`, 'info');
+        }
+        
+        function updateSchedule(scheduleId) {
+            const schedule = dbSchema.report_schedule.data.find(s => s.id === scheduleId);
+            if (!schedule) return;
+            
+            // Update schedule data
+            schedule.name = document.querySelector('#scheduleForm input[type="text"]').value;
+            schedule.type = document.getElementById('scheduleFrequency').value;
+            schedule.time_of_day = document.querySelector('#scheduleForm input[type="time"]').value;
+            schedule.next_run = calculateNextRun(schedule.type, schedule.time_of_day);
+            
+            // Update recipients
+            const newRecipients = document.querySelector('#scheduleForm input[placeholder*="email"]').value
+                .split(',').map(email => email.trim());
+            
+            // Remove old recipients
+            dbSchema.report_schedule_recipient.data = dbSchema.report_schedule_recipient.data
+                .filter(r => r.schedule_id !== scheduleId);
+            
+            // Add new recipients
+            newRecipients.forEach(email => {
+                dbSchema.report_schedule_recipient.data.push({
+                    id: Date.now() + Math.random(),
+                    schedule_id: scheduleId,
+                    email: email,
+                    name: email.split('@')[0]
+                });
+            });
+            
+            updateScheduleTable();
+            
+            // Reset form
+            document.getElementById('scheduleForm').reset();
+            const submitButton = document.querySelector('#scheduleForm button[type="submit"]');
+            submitButton.textContent = 'Create Schedule';
+            submitButton.onclick = null;
+            
+            showNotification(`Schedule "${schedule.name}" updated successfully!`, 'success');
+        }
+        
+        // Notifications
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            } fade-in`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default active navigation
+            document.querySelector('[onclick="showSection(\'dashboard\')"]').classList.add('bg-indigo-50', 'text-indigo-600');
+            
+            // Initialize schedule table if admin
+            setTimeout(() => {
+                if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr')) {
+                    updateScheduleTable();
+                }
+                updateMealTable();
+                updateDashboardStats();
+            }, 100);
+        });
+        
+        // Simulate FEDERATED table integration
+        class FederatedDataService {
+            static async getMealConsumption(startDate, endDate, userid = null) {
+                // Simulate federated query to meal_cons table
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const federatedData = [
+                            { userid: '002', checktime: '2024-01-15 12:30:00', workcode: 'lunch' },
+                            { userid: '003', checktime: '2024-01-15 08:15:00', workcode: 'breakfast' },
+                            { userid: '004', checktime: '2024-01-14 19:45:00', workcode: 'dinner' },
+                            { userid: '002', checktime: '2024-01-14 12:15:00', workcode: 'lunch' },
+                            { userid: '002', checktime: '2024-01-13 08:00:00', workcode: 'breakfast' }
+                        ];
+                        
+                        let filtered = federatedData;
+                        if (userid) {
+                            filtered = federatedData.filter(record => record.userid === userid);
+                        }
+                        
+                        resolve(filtered);
+                    }, 500);
+                });
+            }
+            
+            static async getEmployeeInfo(userid) {
+                // Simulate federated query to employee table
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const employees = {
+                            '002': { userid: '002', name: 'John Doe', department: 'IT', workcode: 'FT' },
+                            '003': { userid: '003', name: 'Jane Smith', department: 'HR', workcode: 'FT' },
+                            '004': { userid: '004', name: 'Mike Johnson', department: 'Finance', workcode: 'FT' }
+                        };
+                        resolve(employees[userid] || null);
+                    }, 300);
+                });
+            }
+        }
+        
+        // Advanced SQL Aggregation Engine - Implements GEMINI 3.3 specification
+        class SQLAggregationEngine {
+            // Step 1: Quantités par employé et workcode sur une période
+            static getMealQuantities(startDate, endDate) {
+                // Simulate: SELECT mc.userid, mc.workcode, COUNT(*) AS qty FROM meal_cons mc WHERE mc.checktime >= :start_date AND mc.checktime < :end_date_plus_1 GROUP BY mc.userid, mc.workcode
+                const quantities = {};
+                
+                sampleMeals.forEach(meal => {
+                    const mealDate = new Date(meal.datetime);
+                    if (mealDate >= startDate && mealDate < endDate) {
+                        const key = `${meal.userid}_${meal.workcode}`;
+                        if (!quantities[key]) {
+                            quantities[key] = {
+                                userid: meal.userid,
+                                workcode: meal.workcode,
+                                qty: 0
+                            };
+                        }
+                        quantities[key].qty++;
+                    }
+                });
+                
+                return Object.values(quantities);
+            }
+            
+            // Step 2: Paramètres effectifs (override > global)
+            static getEffectiveParameters(quantities) {
+                // Simulate complex LEFT JOIN with COALESCE for employee overrides
+                return quantities.map(q => {
+                    // Check for employee-specific override
+                    const employeeOverride = dbSchema.employee_meal_rate.data.find(
+                        emr => emr.userid === q.userid && emr.workcode === q.workcode
+                    );
+                    
+                    // Get global settings
+                    const globalSetting = dbSchema.meal_setting.data.find(
+                        ms => ms.workcode === q.workcode
+                    );
+                    
+                    // Apply COALESCE logic: override takes precedence over global
+                    return {
+                        ...q,
+                        rate: employeeOverride?.rate_normal || globalSetting?.rate_normal || 0,
+                        lim: employeeOverride?.limit_monthly || globalSetting?.limit_monthly || 0,
+                        rate_after: employeeOverride?.rate_after_limit || globalSetting?.rate_after_limit || 0,
+                        source: employeeOverride ? 'employee_override' : 'global_setting'
+                    };
+                });
+            }
+            
+            // Step 3: Valorisation et totalisation avec JSON_OBJECTAGG simulation
+            static calculateDeductionsWithBreakdown(effectiveParams) {
+                const employeeDeductions = {};
+                
+                effectiveParams.forEach(param => {
+                    if (!employeeDeductions[param.userid]) {
+                        employeeDeductions[param.userid] = {
+                            userid: param.userid,
+                            total_deduction: 0,
+                            breakdown: {}
+                        };
+                    }
+                    
+                    // Apply business logic: CASE WHEN qty <= lim THEN rate * qty ELSE rate * lim + (qty - lim) * rate_after END
+                    let cost;
+                    if (param.qty <= param.lim) {
+                        cost = param.rate * param.qty;
+                    } else {
+                        cost = param.rate * param.lim + (param.qty - param.lim) * param.rate_after;
+                    }
+                    
+                    employeeDeductions[param.userid].total_deduction += cost;
+                    
+                    // Simulate JSON_OBJECTAGG for detailed breakdown
+                    employeeDeductions[param.userid].breakdown[param.workcode] = {
+                        qty: param.qty,
+                        rate: param.rate,
+                        limit: param.lim,
+                        rate_after: param.rate_after,
+                        cost: cost,
+                        within_limit: Math.min(param.qty, param.lim),
+                        over_limit: Math.max(0, param.qty - param.lim),
+                        source: param.source
+                    };
+                });
+                
+                return Object.values(employeeDeductions);
+            }
+            
+            // Complete aggregation pipeline
+            static generateEmployeeDeductionReport(startDate, endDate) {
+                console.log(`🔄 SQL Aggregation Pipeline: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+                
+                // Step 1: Get meal quantities
+                const quantities = this.getMealQuantities(startDate, endDate);
+                console.log(`📊 Step 1 - Quantities found: ${quantities.length} employee-workcode combinations`);
+                
+                // Step 2: Apply effective parameters (employee overrides + global settings)
+                const effectiveParams = this.getEffectiveParameters(quantities);
+                console.log(`⚙️ Step 2 - Applied effective parameters with ${effectiveParams.filter(p => p.source === 'employee_override').length} employee overrides`);
+                
+                // Step 3: Calculate deductions with detailed breakdown
+                const deductions = this.calculateDeductionsWithBreakdown(effectiveParams);
+                console.log(`💰 Step 3 - Calculated deductions for ${deductions.length} employees`);
+                
+                return {
+                    period: { start: startDate, end: endDate },
+                    employees: deductions,
+                    summary: {
+                        total_employees: deductions.length,
+                        total_deduction: deductions.reduce((sum, emp) => sum + emp.total_deduction, 0),
+                        avg_deduction: deductions.length > 0 ? deductions.reduce((sum, emp) => sum + emp.total_deduction, 0) / deductions.length : 0
+                    },
+                    sql_steps: {
+                        quantities_found: quantities.length,
+                        overrides_applied: effectiveParams.filter(p => p.source === 'employee_override').length,
+                        employees_processed: deductions.length
+                    }
+                };
+            }
+        }
+        
+        // Advanced Period Resolution Engine - Implements GEMINI 4.2 specification
+        class PeriodCalculationEngine {
+            static resolvePeriod(schedule, now = new Date()) {
+                const tz = 'America/Port-au-Prince'; // Consistent with Haiti timezone
+                
+                switch (schedule.type) {
+                    case 'daily': {
+                        // période = hier (ou aujourd'hui selon besoin) → [D, D]
+                        const yesterday = new Date(now);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const start = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+                        const end = new Date(start);
+                        end.setDate(end.getDate() + 1);
+                        return { start, end, description: `Daily: ${start.toDateString()}` };
+                    }
+                    
+                    case 'weekly': {
+                        // période = semaine ISO (Lundi–Dimanche) basée sur day_of_week
+                        const dayOfWeek = schedule.day_of_week || 1; // Default to Monday
+                        const currentDay = now.getDay() || 7; // Convert Sunday (0) to 7
+                        const daysToSubtract = (currentDay - dayOfWeek + 7) % 7;
+                        
+                        const start = new Date(now);
+                        start.setDate(start.getDate() - daysToSubtract);
+                        start.setHours(0, 0, 0, 0);
+                        
+                        const end = new Date(start);
+                        end.setDate(end.getDate() + 7);
+                        
+                        return { start, end, description: `Weekly: ${start.toDateString()} to ${new Date(end.getTime() - 1).toDateString()}` };
+                    }
+                    
+                    case 'bi-weekly': {
+                        // blocs de 14 jours à partir de anchor_date → [anchor + 14k, anchor + 14(k+1) - 1]
+                        const anchorDate = schedule.anchor_date ? new Date(schedule.anchor_date) : new Date('2025-01-01');
+                        const daysSinceAnchor = Math.floor((now - anchorDate) / (1000 * 60 * 60 * 24));
+                        const periodNumber = Math.floor(daysSinceAnchor / 14);
+                        
+                        const start = new Date(anchorDate);
+                        start.setDate(start.getDate() + (periodNumber * 14));
+                        start.setHours(0, 0, 0, 0);
+                        
+                        const end = new Date(start);
+                        end.setDate(end.getDate() + 14);
+                        
+                        return { start, end, description: `Bi-weekly period ${periodNumber + 1}: ${start.toDateString()} to ${new Date(end.getTime() - 1).toDateString()}` };
+                    }
+                    
+                    case 'semi-monthly': {
+                        // 1–15 et 16–fin_de_mois
+                        const currentDate = now.getDate();
+                        let start, end;
+                        
+                        if (currentDate <= 15) {
+                            // First half of month
+                            start = new Date(now.getFullYear(), now.getMonth(), 1);
+                            end = new Date(now.getFullYear(), now.getMonth(), 16);
+                        } else {
+                            // Second half of month
+                            start = new Date(now.getFullYear(), now.getMonth(), 16);
+                            end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                        }
+                        
+                        return { start, end, description: `Semi-monthly: ${start.toDateString()} to ${new Date(end.getTime() - 1).toDateString()}` };
+                    }
+                    
+                    case 'monthly': {
+                        // 1–fin_de_mois
+                        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                        const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                        
+                        return { start, end, description: `Monthly: ${start.toDateString()} to ${new Date(end.getTime() - 1).toDateString()}` };
+                    }
+                    
+                    case 'custom': {
+                        // start_date–end_date fixés dans report_schedule
+                        const start = schedule.start_date ? new Date(schedule.start_date) : new Date();
+                        const end = schedule.end_date ? new Date(schedule.end_date) : new Date();
+                        end.setDate(end.getDate() + 1); // Make end exclusive
+                        
+                        return { start, end, description: `Custom: ${start.toDateString()} to ${new Date(end.getTime() - 1).toDateString()}` };
+                    }
+                    
+                    default:
+                        throw new Error(`Unknown schedule type: ${schedule.type}`);
+                }
+            }
+            
+            // Calculate next run time based on frequency and current time
+            static calculateNextRun(schedule, now = new Date()) {
+                const { start, end } = this.resolvePeriod(schedule, now);
+                const [hours, minutes] = (schedule.time_of_day || '09:00:00').split(':').map(Number);
+                
+                let nextRun = new Date(end); // Start from end of current period
+                nextRun.setHours(hours, minutes, 0, 0);
+                
+                // If we're still in the future, use current period
+                if (nextRun > now) {
+                    nextRun = new Date(start);
+                    nextRun.setHours(hours, minutes, 0, 0);
+                }
+                
+                return nextRun;
+            }
+            
+            // Get all periods for a date range (useful for historical reporting)
+            static getAllPeriodsInRange(scheduleType, startDate, endDate, anchorDate = null) {
+                const periods = [];
+                let current = new Date(startDate);
+                
+                while (current < endDate) {
+                    const mockSchedule = { 
+                        type: scheduleType, 
+                        anchor_date: anchorDate,
+                        day_of_week: 1 // Monday default
+                    };
+                    
+                    const period = this.resolvePeriod(mockSchedule, current);
+                    periods.push(period);
+                    
+                    // Move to next period
+                    current = new Date(period.end);
+                }
+                
+                return periods;
+            }
+        }
+        
+        // Enhanced notification system with database logging
+        function logAction(action, details) {
+            // Simulate logging to logs table
+            const logEntry = {
+                id: Date.now(),
+                user_id: currentUser?.id || null,
+                action: action,
+                details: JSON.stringify(details),
+                ip_address: '127.0.0.1', // Would be real IP in production
+                created_at: new Date().toISOString()
+            };
+            
+            // In real app, this would be sent to backend
+            console.log('Action logged:', logEntry);
+        }
+        
+        // Enhanced settings with app_settings integration
+        function loadAppSettings() {
+            const settings = {};
+            dbSchema.app_settings.data.forEach(setting => {
+                settings[setting.k] = setting.v;
+            });
+            return settings;
+        }
+        
+        function updateAppSetting(key, value) {
+            const existing = dbSchema.app_settings.data.find(s => s.k === key);
+            if (existing) {
+                existing.v = value;
+                existing.updated_at = new Date().toISOString();
+            } else {
+                dbSchema.app_settings.data.push({
+                    id: Date.now(),
+                    k: key,
+                    v: value,
+                    updated_at: new Date().toISOString()
+                });
+            }
+            
+            logAction('setting_updated', { key, value });
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97a7f852229048d8',t:'MTc1NzA5ODgzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
