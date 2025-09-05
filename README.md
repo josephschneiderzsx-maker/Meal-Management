@@ -13,12 +13,12 @@ This repository was scaffolded and developed by an AI software engineer, Jules.
 -   Frontend project setup with Next.js, TypeScript, and Tailwind CSS.
 -   Database schema for application-specific tables (`user`, `app_settings`, etc.).
 -   Backend authentication endpoint (`/api/auth/login`).
--   Frontend login page that connects to the backend.
+-   Frontend login page (at the root `/`) that connects to the backend.
 -   A styled, component-based dashboard UI with placeholder data.
 
 ## Project Structure
 
-The project is organized into two main directories:
+The project is organized into two main directories. All commands should be run from the root of the project unless specified otherwise.
 -   `api/`: Contains the backend Express.js application.
 -   `app/`: Contains the frontend Next.js application.
 
@@ -37,10 +37,17 @@ Before you begin, ensure you have the following installed:
     ```
 
 2.  **Create an environment file:**
-    Copy the example and fill in your details.
+    Manually copy the `env.example` file to a new file named `.env` and fill in your details.
+
+    *On Windows Command Prompt:*
+    ```cmd
+    copy .env.example .env
+    ```
+    *On Linux, macOS, or Git Bash:*
     ```bash
     cp .env.example .env
     ```
+    Now, open the `.env` file in a text editor and add your database credentials, JWT secret, and SMTP server details.
 
 3.  **Install dependencies:**
     ```bash
@@ -70,12 +77,20 @@ Before you begin, ensure you have the following installed:
 ## Frontend Setup (`app/`)
 
 1.  **Navigate to the App directory:**
+    **From the project root**, navigate into the `app` directory.
     ```bash
     cd app
     ```
+    *(If you are in the `api` directory, you must go back to the root first with `cd ..`)*
 
 2.  **Create a local environment file:**
-    Copy the example file. The defaults should work for local development.
+    Manually copy `env.local.example` to a new file named `.env.local`. The default values should work for local development.
+
+    *On Windows Command Prompt:*
+    ```cmd
+    copy .env.local.example .env.local
+    ```
+    *On Linux, macOS, or Git Bash:*
     ```bash
     cp .env.local.example .env.local
     ```
