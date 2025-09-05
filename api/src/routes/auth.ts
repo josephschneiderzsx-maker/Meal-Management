@@ -28,12 +28,14 @@ router.post('/login', async (req, res) => {
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
+        // This check ensures that the secret is available.
+        // If not, it will throw an error, which is caught by the catch block.
         throw new Error('JWT_SECRET is not defined in the environment variables.');
     }
 
     const token = jwt.sign(
       { sub: user.id, role: user.role, employee_id: user.employee_id },
-      secret,
+      secret!, // Using non-null assertion to satisfy TypeScript
       { expiresIn: process.env.JWT_EXPIRES_IN || '3600s' }
     );
 
