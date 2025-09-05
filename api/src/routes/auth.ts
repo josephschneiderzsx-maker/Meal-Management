@@ -2,6 +2,18 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { db } from '../services/db';
+import dotenv from 'dotenv';
+
+// Load environment variables at the top
+dotenv.config();
+
+// Fail-fast check for JWT_SECRET at the module level
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is not defined in the environment variables.");
+  console.error("Please create a .env file in the 'api' directory and add a value for JWT_SECRET.");
+  process.exit(1); // Exit the process immediately
+}
 
 const router = Router();
 
@@ -26,16 +38,10 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-        // This check ensures that the secret is available.
-        // If not, it will throw an error, which is caught by the catch block.
-        throw new Error('JWT_SECRET is not defined in the environment variables.');
-    }
-
+    // Now JWT_SECRET is guaranteed to be a string, so no type error will occur.
     const token = jwt.sign(
       { sub: user.id, role: user.role, employee_id: user.employee_id },
-      secret!, // Using non-null assertion to satisfy TypeScript
+      JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '3600s' }
     );
 
